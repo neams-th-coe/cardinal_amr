@@ -1,0 +1,20 @@
+# VSCode garbage
+.vscode/
+
+# OpenMC / Cardinal outputs
+*.h5
+*.out
+*.e
+*.xml
+*.csv
+
+# OpenMC plotter files
+*.pkl
+
+# Post processing.
+*.png
+*.gif
+*.zip
+
+# Python stuff.
+*.pyc
