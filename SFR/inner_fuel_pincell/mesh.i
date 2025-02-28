@@ -1,24 +1,4 @@
-#----------------------------------------------------------------------------------------
-# Assembly geometrical information
-#----------------------------------------------------------------------------------------
-pitch        = 1.25984
-height       = 30.0
-r_fuel       = 0.4715
-t_gap        = 0.0150
-r_clad_inner = 0.4865
-t_clad       = 0.05
-
-#----------------------------------------------------------------------------------------
-
-#----------------------------------------------------------------------------------------
-# Meshing parameters
-#----------------------------------------------------------------------------------------
-NUM_SECTORS              = 2
-FUEL_RADIAL_DIVISIONS    = 5
-BACKGROUND_DIVISIONS     = 3
-AXIAL_DIVISIONS          = 6
-#----------------------------------------------------------------------------------------
-
+!include ../../common_input.i
 [Mesh]
   [Pin]
     type = PolygonConcentricCircleMeshGenerator
@@ -37,7 +17,6 @@ AXIAL_DIVISIONS          = 6
     flat_side_up = true
     quad_center_elements = false
     preserve_volumes = true
-
     create_outward_interface_boundaries = false
   []
   [Pin_3D]
@@ -47,8 +26,6 @@ AXIAL_DIVISIONS          = 6
     num_layers = '${AXIAL_DIVISIONS}'
     direction = '0.0 0.0 1.0'
 
-    bottom_boundary = '10001'
-    top_boundary = '10000'
   []
   [To_Origin]
     type = TransformGenerator

@@ -1,209 +1,110 @@
-import openmc 
+import sys
+sys.path.append("../..")
+
+import openmc
 import numpy as np
 from argparse import ArgumentParser
-import openmc.material 
+import openmc.material
 import warnings
-warnings.filterwarnings('ignore')
+from materials import *
+warnings.filterwarnings("ignore")
 
+def make_hexagonal_ring_lists(number_of_ring: int, universe: openmc.Universe):
+    ring_list = []
+    for i in range(number_of_ring ,0, -1):
+        if i == 1:
+            ring = [universe]
+        else:
+            ring = [universe] *(i-1)*6
+        ring_list.append(ring)
+    return ring_list
 
-# Create the argument parser
-ap = ArgumentParser(description="SFR Pincell Model Generator")
-ap.add_argument('-n', dest='n_axial', type=int, default=100, help='Number of cells in the Z direction')
-ap.add_argument('-e', '--shannon_entropy', action='store_true', help='Add Shannon entropy mesh')
-ap.add_argument('--height', dest='height_of_the_core', type=float, default=30.0, help='Height of the reactor core')
+def make_sfr_material(material_dict, density: float, percent_type: str):
+    material = openmc.Material()
+    for nuclide, material_info in material_dict.items():
+        material.add_nuclide(nuclide, percent=material_info["percent"], percent_type=percent_type)
 
-# Parse the arguments
-arguments = ap.parse_args()
+    return material
 
-arguments=ap.parse_args()
+def settings(shannon_entropy:bool,height:float):
+    settings = openmc.Settings()
+    settings.batches = 200
+    settings.inactive = 40
+    settings.particles = 20000
 
-N=arguments.n_axial
-height=arguments.height_of_the_core
-shannon_entropy=arguments.shannon_entropy
+    if shannon_entropy:
+        entropy_mesh = openmc.RegularMesh()
+        entropy_mesh.lower_left = lower_left
+        entropy_mesh.upper_right = upper_right
+        entropy_mesh.dimension = (10, 10, 20)
+        settings.entropy_mesh = entropy_mesh
 
+    settings.temperature = { "default": 280.0 + 273.15,"method": "interpolation","range": (294.0, 3000.0),"tolerance": 1000.0}
+    settings.export_to_xml()
 
-###################################################################
-##########################   Materials     ########################
-###################################################################
+def main():
+    ap = ArgumentParser(description="SFR Pincell Model Generator")
+    ap.add_argument("-n",dest="n_axial",type=int,default=1,help="Number of cells in the Z direction",)
+    ap.add_argument( "-e", "--shannon_entropy", action="store_true", help="Add Shannon entropy mesh")
+    ap.add_argument("--height",dest="height_of_the_core", type=float,default=30.0,help="Height of the reactor core")
 
-u235 = openmc.Material(name='U235')
-u235.add_nuclide('U235', 1.0)
-u235.set_density('g/cm3', 10.0)
+    arguments = ap.parse_args()
+    arguments = ap.parse_args()
 
-u238 = openmc.Material(name='U238')
-u238.add_nuclide('U238', 1.0)
-u238.set_density('g/cm3', 10.0)
+    N = arguments.n_axial
+    height = arguments.height_of_the_core
+    shannon_entropy = arguments.shannon_entropy
 
-pu238 = openmc.Material(name='Pu238')
-pu238.add_nuclide('Pu238', 1.0)
-pu238.set_density('g/cm3', 10.0)
+    outer_fuel_material = make_sfr_material(material_dict=outer_fuel_material_dict, density=10.0, percent_type="wo")
+    cladding_material = make_sfr_material(material_dict=cladding_material_dict, density=10, percent_type="ao")
+    helium =make_sfr_material(material_dict =heilum_material_dict, density =0.001598 ,percent_type ='ao')
+    sodium  =make_sfr_material(material_dict =sodium_material_dict, density =0.96 ,percent_type ='ao')
+    materials = openmc.Materials([outer_fuel_material, sodium, helium, cladding_material])
+    materials.export_to_xml()
 
-pu239 = openmc.Material(name='U235')
-pu239.add_nuclide('Pu239', 1.0)
-pu239.set_density('g/cm3', 10.0)
+    fuel_or = openmc.ZCylinder(r=0.943/2)
+    clad_ir = openmc.ZCylinder(r=0.973/2)
+    clad_or = openmc.ZCylinder(r=1.073/2)
 
-pu240 = openmc.Material(name='Pu240')
-pu240.add_nuclide('Pu240', 1.0)
-pu240.set_density('g/cm3', 10.0)
+    z_plane=[openmc.ZPlane(z0=i) for i in np.linspace(-height/2,height/2,N+1)]
+    top=z_plane[-1]
+    bottom=z_plane[0]
+    top.boundary_type='vacuum'
+    bottom.boundary_type='vacuum'
 
-pu241 = openmc.Material(name='Pu241')
-pu241.add_nuclide('Pu241', 1.0)
-pu241.set_density('g/cm3', 10.0)
+    inner_cells = {'fuel': [],'gas_gap': [],'clad': [],'sodium': []}
+    all_inner_cells = []
 
-pu242 = openmc.Material(name='Pu242')
-pu242.add_nuclide('Pu242', 1.0)
-pu242.set_density('g/cm3', 10.0)
+    for i in range(N):
 
-am241 = openmc.Material(name='Am241')
-am241.add_nuclide('Am241', 1.0)
-am241.set_density('g/cm3', 10.0)
+        layer = +z_plane[i] & -z_plane[i+1]
+        inner_cells['fuel'].append(openmc.Cell(fill=outer_fuel_material, region=layer & -fuel_or))
+        inner_cells['gas_gap'].append(openmc.Cell(fill=helium, region=layer & +fuel_or & -clad_ir))
+        inner_cells['clad'].append(openmc.Cell(fill=cladding_material, region=layer & +clad_ir & -clad_or))
+        inner_cells['sodium'].append(openmc.Cell(fill=sodium, region=+clad_or & layer))
 
-o16 = openmc.Material(name='O16')
-o16.add_nuclide('O16', 1.0)
-o16.set_density('g/cm3', 10.0)
+        all_inner_cells.extend([inner_cells['fuel'][i], inner_cells['gas_gap'][i], inner_cells['clad'][i], inner_cells['sodium'][i]])
 
-sodium = openmc.Material(name='Na')
-sodium.add_nuclide('Na23', 1.0)
-sodium.set_density('g/cm3', 0.96)
+    inner_u = openmc.Universe(cells=all_inner_cells)
 
-cu63 = openmc.Material(name='Cu63')
-cu63.set_density('g/cm3', 10.0)
-cu63.add_nuclide('Cu63', 1.0)
+    sodium_mod_cell = openmc.Cell( fill=sodium)
+    sodium_mod_u = openmc.Universe( cells=(sodium_mod_cell,))
 
-Al2O3 = openmc.Material(name='Al2O3')
-Al2O3.set_density('g/cm3', 10.0)
-Al2O3.add_element('O', 3.0)
-Al2O3.add_element('Al', 2.0)
+    in_lat = openmc.HexLattice( name='inner assembly')
+    in_lat.center = (0., 0.)
+    in_lat.pitch = (21.08/17,)
+    in_lat.orientation = 'y'
+    in_lat.outer = sodium_mod_u
+    in_lat.universes = make_hexagonal_ring_lists(9,inner_u)
 
-helium = openmc.Material(name='Helium for gap')
-helium.set_density('g/cm3', 0.001598)
-helium.add_element('He', 2.4044e-4)
+    outer_in_surface = openmc.model.hexagonal_prism(edge_length=12.1705, orientation='y')
+    main_in_assembly = openmc.Cell( fill=in_lat, region=outer_in_surface & -top & +bottom)
+    out_in_assembly  = openmc.Cell( fill=sodium, region=~outer_in_surface & -top & +bottom)
+    main_in_u = openmc.Universe( cells=[main_in_assembly, out_in_assembly])
+    geometry = openmc.Geometry(main_in_u)
+    geometry.export_to_xml()
 
-#Material mixtures
+    settings(shannon_entropy = False,height= height)
 
-outer_fuel_material= openmc.Material.mix_materials([u235, u238, pu238, pu239, pu240, pu241, pu242, am241, o16],[0.0018, 0.73, 0.0053, 0.0711, 0.0445, 0.0124, 0.0156, 0.0017, 0.1176],'wo')
-cladding_material = openmc.Material.mix_materials([cu63,Al2O3], [0.997,0.003], 'wo')
-
-materials=openmc.Materials([outer_fuel_material,sodium,helium,cladding_material])
-materials.export_to_xml()
-
-
-###############################################################################
-# Define problem geometry
-
-# Create cylindrical surfaces
-
-
-
-# Create cylindrical surfacesfuel_or = openmc.ZCylinder(surface_id=1, r=0.943/2) 
-
-fuel_or = openmc.ZCylinder(surface_id=1, r=0.943/2) 
-clad_ir = openmc.ZCylinder(surface_id=2, r=0.973/2) 
-clad_or = openmc.ZCylinder(surface_id=3, r=1.073/2) 
-
-
-
-z_co_ordinates=np.linspace(-height/2,height/2,N+1)
-z_plane=[]
-for i in range (len(z_co_ordinates)):
-    z_plane.append(openmc.ZPlane(z0=z_co_ordinates[i]))
-
-
-#set BCs
-z_plane[0].boundary_type='vacuum'
-z_plane[-1].boundary_type='vacuum'
-top=z_plane[-1]
-bottom=z_plane[0]
-
-outer_fuel_cells=[]
-outer_gas_gap_cells=[]
-outer_clad_cells=[]
-outer_sodium_cells=[]
-
-all_outer_cells=[]
-
-outer_fuel_cells=[]
-outer_gas_gap_cells=[]
-outer_clad_cells=[]
-outer_sodium_cells=[]
-
-for i in range (N):
-    
-    layer=+z_plane[i]&-z_plane[i+1]
-    
-    outer_fuel_cells.append(openmc.Cell( fill=outer_fuel_material,region=layer & -fuel_or))
-    outer_gas_gap_cells.append(openmc.Cell( fill=helium,region=layer & +fuel_or &-clad_ir))
-    outer_clad_cells.append(openmc.Cell(fill=cladding_material,region= layer& +clad_ir &-clad_or))
-    outer_sodium_cells.append(openmc.Cell(fill=sodium,region= +clad_or & layer))
-    
-    all_outer_cells.append(outer_fuel_cells[i])
-    all_outer_cells.append(outer_gas_gap_cells[i])
-    all_outer_cells.append(outer_clad_cells[i])
-    all_outer_cells.append(outer_sodium_cells[i])
-    
-    
-outer_u = openmc.Universe(cells=(all_outer_cells))
-
-sodium_mod_cell = openmc.Cell(cell_id=6, fill=sodium)
-sodium_mod_u = openmc.Universe(universe_id=3, cells=(sodium_mod_cell,))
-
-# Define a lattice for outer assemblies
-out_lat = openmc.HexLattice(lattice_id=1, name='outer assembly')
-out_lat.center = (0., 0.)
-out_lat.pitch = (21.08/17,)
-out_lat.orientation = 'y'
-out_lat.outer = sodium_mod_u
-
-# Create rings of fuel universes that will fill the lattice
-outone = [outer_u]*48
-outtwo = [outer_u]*42
-outthree = [outer_u]*36
-outfour = [outer_u]*30
-outfive = [outer_u]*24
-outsix = [outer_u]*18
-outseven = [outer_u]*12
-outeight = [outer_u]*6
-outnine = [outer_u]*1
-out_lat.universes = [outone,outtwo,outthree,outfour,outfive,outsix,outseven,outeight,outnine]
-print (out_lat)
-# Create the prism that will contain the lattice
-outer_surface = openmc.model.hexagonal_prism(edge_length=12.1705, orientation='y')
-
-# Fill a cell with the lattice. This cell is filled with the lattice and contained within the prism.
-main_out_assembly = openmc.Cell(cell_id=7, fill=out_lat, region=outer_surface & -top & +bottom)
-
-# Fill a cell with a material that will surround the lattice
-out_assembly  = openmc.Cell(cell_id=8, fill=sodium, region=~outer_surface & -top & +bottom)
-
-# Create a universe that contains both 
-main_out_u = openmc.Universe(universe_id=4, cells=[main_out_assembly, out_assembly])
-
-# Create a geometry and export to XML
-geometry = openmc.Geometry(main_out_u)
-geometry.export_to_xml()
-
-###############################################################################
-# Define problem settings
-
-
-# settings 
-settings=openmc.Settings()
-settings.batches=1000
-settings.inactive=400
-settings.particles=10000
-
-
-if (shannon_entropy):
-  entropy_mesh = openmc.RegularMesh()
-  entropy_mesh.lower_left = lower_left
-  entropy_mesh.upper_right = upper_right
-  entropy_mesh.dimension = (10, 10, 20)
-  settings.entropy_mesh = entropy_mesh
-
-settings.temperature = {'default': 280.0 + 273.15,
-                        'method': 'interpolation',
-                        'range': (294.0, 3000.0),
-                        'tolerance': 1000.0}
-
-settings.export_to_xml()
-
+if __name__ == "__main__":
+    main()

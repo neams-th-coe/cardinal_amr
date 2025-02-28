@@ -1,42 +1,11 @@
+!include ../../../amar_strategies/value_jump_rel_error.i
+
 [Mesh]
   [file]
     type = FileMeshGenerator
     file = mesh_in.e
   []
 []
-
-[Adaptivity]
-  marker = error_combo
-  steps = 10
-
-  [Indicators/error]
-    type = ValueJumpIndicator
-    variable = heat_source
-  []
-  [Markers]
-    [error_frac]
-      type = ErrorFractionMarker
-      indicator = error
-      refine = 0.7
-      coarsen = 0.0
-    []
-    [rel_error]
-      type = ValueThresholdMarker
-      invert = true
-      coarsen = 2e-1
-      refine = 1e-2
-      variable = heat_source_rel_error
-      third_state = DO_NOTHING
-    []
-    [error_combo]
-      type = BooleanComboMarker     
-      refine_markers = 'rel_error error_frac'
-      coarsen_markers = 'rel_error'
-      boolean_operator = and
-    []
-  []
-[]
-
 [Problem]
   type = OpenMCCellAverageProblem
   particles = 20000
