@@ -7,9 +7,6 @@
     heights = '${fparse core_height}'
     num_layers = '${AXIAL_DIVISIONS}'
     direction = '0.0 0.0 1.0'
-
-    bottom_boundary = '10001'
-    top_boundary = '10000'
   []
   [To_Origin]
     type = TransformGenerator

@@ -31,19 +31,20 @@ args = ap.parse_args()
 #--------------------------------------------------------------------------------------------------------------------------#
 # Geometry definitions.
 assembly_bb.boundary_type = 'reflective'
-core_z_planes = [ openmc.ZPlane(z0=z) for z in np.linspace(0.0, geom.core_height, args.n_axial + 1) ]
-core_z_planes[0].boundary_type = 'reflective'
+fuel_center = openmc.ZPlane(z0 = 0.0, boundary_type = 'reflective')
+fuel_top = openmc.ZPlane(z0 = geom.core_height)
 
-all_cells = []
-for layer_idx, planes in enumerate(zip(core_z_planes[:-1], core_z_planes[1:])):
-  all_cells.append(openmc.Cell(name = f'UO2 Assembly Cell {layer_idx}', region = -assembly_bb & +planes[0] & -planes[1], fill = asmb['UO2']))
+asmb['UO2'].fill.pitch = (geom.pitch, geom.pitch, geom.core_height / args.n_axial)
+asmb['UO2'].fill.lower_left = (-pins_per_axis * geom.pitch / 2.0, -pins_per_axis * geom.pitch / 2.0, 0.0)
+asmb['UO2'].fill.universes = [ asmb['UO2'].fill.universes for i in range(args.n_axial) ]
+asmb['UO2'].region = asmb['UO2'].region & +fuel_center & -fuel_top
 
 refl_top = openmc.ZPlane(z0 = geom.core_height + geom.reflector_t, boundary_type = 'vacuum')
-all_cells.append(openmc.Cell(name='Axial Reflector Cell', fill = asmb['REF'], region=-assembly_bb & -refl_top & +core_z_planes[-1]))
+asmb['REF'].region = asmb['REF'].region & -refl_top & +fuel_top
 
 #--------------------------------------------------------------------------------------------------------------------------#
 # Setup the model.
-c5g7_model = openmc.Model(geometry = openmc.Geometry(openmc.Universe(cells = all_cells)), materials = openmc.Materials([mats['UO2'], mats['H2O'], mats['FISS'], mats['ZR_C'], mats['AL_C']]))
+c5g7_model = openmc.Model(geometry = openmc.Geometry(openmc.Universe(cells = [asmb['UO2'], asmb['REF']])), materials = openmc.Materials([mats['UO2'], mats['H2O'], mats['FISS'], mats['ZR_C'], mats['AL_C']]))
 
 ## The simulation settings.
 c5g7_model.settings.source = [openmc.IndependentSource(space = openmc.stats.Box(lower_left = (-pins_per_axis * geom.pitch / 2.0, -pins_per_axis * geom.pitch / 2.0, 0.0),
@@ -52,6 +53,11 @@ c5g7_model.settings.batches = 100
 c5g7_model.settings.generations_per_batch = 10
 c5g7_model.settings.inactive = 10
 c5g7_model.settings.particles = 1000
+
+c5g7_model.settings.temperature = {'default': 293.15,
+                                   'method': 'interpolation',
+                                   'range': (294.0, 3000.0),
+                                   'tolerance': 1000.0}
 
 c5g7_model.export_to_model_xml()
 #--------------------------------------------------------------------------------------------------------------------------#
