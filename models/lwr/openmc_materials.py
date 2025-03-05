@@ -16,6 +16,8 @@ import numpy as np
 
 #--------------------------------------------------------------------------------------------------------------------------#
 # Material definitions.
+INITIAL_TEMP = 293.15
+
 MATERIAL_COMP = {
   'MOX_43' : {
     'U235' : 5.00e-5,
@@ -80,7 +82,7 @@ MATERIAL_COMP = {
 
 MATERIALS = {}
 for mat_name, mat_comp in MATERIAL_COMP.items():
-  MATERIALS[mat_name] = openmc.Material(name = mat_name, temperature = 293.15)
+  MATERIALS[mat_name] = openmc.Material(name = mat_name, temperature = INITIAL_TEMP)
   density = np.sum(np.array(list(mat_comp.values())))
   for nuclide, comp in mat_comp.items():
     if nuclide[-1].isdigit():

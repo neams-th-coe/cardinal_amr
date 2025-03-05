@@ -21,6 +21,7 @@ import openmc
 import openmc_common as geom
 from openmc_materials import MATERIALS as mats
 from openmc_pincells import PINCELLS as pins
+from openmc_settings import COMMON_SETTINGS as settings
 
 ap = ArgumentParser()
 ap.add_argument('-n', dest='n_axial', type=int, default=1,
@@ -30,40 +31,33 @@ args = ap.parse_args()
 #--------------------------------------------------------------------------------------------------------------------------#
 # Geometry definitions.
 pins_per_axis = 3.0
-core_z_planes = [ openmc.ZPlane(z0=z) for z in np.linspace(0.0, geom.core_height, args.n_axial + 1) ]
-core_z_planes[0].boundary_type = 'reflective'
+fuel_center = openmc.ZPlane(z0 = 0.0, boundary_type = 'reflective')
+fuel_top = openmc.ZPlane(z0 = geom.core_height)
+assembly_bb = openmc.model.RectangularPrism(width = pins_per_axis * geom.pitch, height = pins_per_axis * geom.pitch, origin = (0.0, 0.0), boundary_type = 'reflective')
 
-assembly = openmc.RectLattice(name='Fuel Assembly')
-assembly.pitch = (geom.pitch, geom.pitch)
-assembly.lower_left = (-pins_per_axis * geom.pitch / 2.0, -pins_per_axis * geom.pitch / 2.0)
-assembly.universes = [
+core_assembly = openmc.RectLattice(name='Fuel Assembly')
+core_assembly.pitch = (geom.pitch, geom.pitch, geom.core_height / args.n_axial)
+core_assembly.lower_left = (-pins_per_axis * geom.pitch / 2.0, -pins_per_axis * geom.pitch / 2.0, 0.0)
+core_assembly.universes = [ [
   [pins['UO2'], pins['UO2'], pins['UO2']],
   [pins['UO2'], pins['UO2'], pins['UO2']],
   [pins['UO2'], pins['UO2'], pins['UO2']]
-]
-assembly_bb = openmc.model.RectangularPrism(width = pins_per_axis * geom.pitch, height = pins_per_axis * geom.pitch, origin = (0.0, 0.0), boundary_type = 'reflective')
-
-all_cells = []
-for layer_idx, planes in enumerate(zip(core_z_planes[:-1], core_z_planes[1:])):
-  all_cells.append(openmc.Cell(name = f'UO2 Assembly Cell {layer_idx}', region = -assembly_bb & +planes[0] & -planes[1], fill = assembly))
+] for i in range(args.n_axial) ]
+core_assembly_cell = openmc.Cell(name = 'UO2 Pincell Lattice Cell', region = -assembly_bb & +fuel_center & -fuel_top, fill = core_assembly)
 
 ## Add the top axial water reflector.
 refl_top = openmc.ZPlane(z0 = geom.core_height + geom.reflector_t, boundary_type = 'vacuum')
-all_cells.append(openmc.Cell(name='Axial Reflector Cell', fill = mats['H2O'], region=-assembly_bb & -refl_top & +core_z_planes[-1]))
+refl_cell = openmc.Cell(name='Axial Reflector Cell', fill = mats['H2O'], region=-assembly_bb & -refl_top & +fuel_top)
 #--------------------------------------------------------------------------------------------------------------------------#
 
 #--------------------------------------------------------------------------------------------------------------------------#
 # Setup the model.
-mult_pincell_model = openmc.Model(geometry = openmc.Geometry(openmc.Universe(cells = all_cells)), materials = openmc.Materials([mats['UO2'], mats['H2O'], mats['ZR_C']]))
+mult_pincell_model = openmc.Model(geometry = openmc.Geometry(openmc.Universe(cells = [core_assembly_cell, refl_cell])))
 
 ## The simulation settings.
+mult_pincell_model.settings = settings
 mult_pincell_model.settings.source = [openmc.IndependentSource(space = openmc.stats.Box(lower_left = (-pins_per_axis * geom.pitch / 2.0, -pins_per_axis * geom.pitch / 2.0, 0.0),
                                                                                         upper_right = (pins_per_axis * geom.pitch / 2.0,  pins_per_axis * geom.pitch / 2.0, geom.core_height)))]
-
-mult_pincell_model.settings.batches = 100
-mult_pincell_model.settings.generations_per_batch = 10
-mult_pincell_model.settings.inactive = 10
-mult_pincell_model.settings.particles = 1000
 
 mult_pincell_model.export_to_model_xml()
 #--------------------------------------------------------------------------------------------------------------------------#

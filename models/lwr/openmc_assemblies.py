@@ -20,6 +20,7 @@ from openmc_pincells import PINCELLS as pins
 ## The assemblies.
 pins_per_axis = 17.0
 ASSEMBLIES = {}
+ASSEMBLY_UNIVERSES = {}
 assembly_bb = openmc.model.RectangularPrism(width = pins_per_axis * geom.pitch, height = pins_per_axis * geom.pitch)
 
 ### Different assembly maps.
@@ -84,17 +85,18 @@ ASSEMBLY_MAPS = {
 }
 
 #### Replace all guide tubes with control rods for the rodded assembly.
-ASSEMBLY_MAPS['UO2_ROD'] = [ [ pin_type.replace('GTB', 'ROD') for pin_type in row] for row in ASSEMBLY_MAPS['UO2'] ]
+ASSEMBLY_MAPS['UO2_ROD'] = [ [ pin_type.replace('GTB', 'ROD') for pin_type in row ] for row in ASSEMBLY_MAPS['UO2'] ]
 
 #### Replace all guide tubes with control rods for the rodded reflector, other than the central guide tube.
-ASSEMBLY_MAPS['REF_ROD'] = [ [ pin_type.replace('GTB', 'ROD') for pin_type in row] for row in ASSEMBLY_MAPS['REF'] ]
+ASSEMBLY_MAPS['REF_ROD'] = [ [ pin_type.replace('GTB', 'ROD') for pin_type in row ] for row in ASSEMBLY_MAPS['REF'] ]
 ASSEMBLY_MAPS['REF_ROD'][8][8] = 'GTB'
 
-### The assembly universes.
+### The assembly cells.
 for name, map in ASSEMBLY_MAPS.items():
   assembly = openmc.RectLattice(name = name)
   assembly.pitch = (geom.pitch, geom.pitch)
   assembly.lower_left = (-pins_per_axis * geom.pitch / 2.0, -pins_per_axis * geom.pitch / 2.0)
   assembly.universes = [ [ pins[pin_type] for pin_type in row] for row in map ]
-  ASSEMBLIES[name] = openmc.Universe(cells = [openmc.Cell(name = name + ' Cell', region = -assembly_bb, fill = assembly)])
+  ASSEMBLIES[name] = openmc.Cell(name = name + ' Lattice Cell', region = -assembly_bb, fill = assembly)
+  ASSEMBLY_UNIVERSES[name] = openmc.Universe(name = name + ' Lattice Universe', cells=[ASSEMBLIES[name]])
 #--------------------------------------------------------------------------------------------------------------------------#
