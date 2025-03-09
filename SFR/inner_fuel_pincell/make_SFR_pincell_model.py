@@ -2,7 +2,7 @@ import openmc
 import numpy as np
 from argparse import ArgumentParser
 import openmc.material
-import common
+import common_input as geom
 from materials import *
 
 def settings(shannon_entropy: bool, height: float):
