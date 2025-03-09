@@ -37,6 +37,7 @@
                           0 0 0 0 0 0 0 0 0;'
 
          hexagon_size = '${fparse edge_length}'
+         hexagon_size_style = 'radius'
     []
     [Assembly_3D]
         type = AdvancedExtruderGenerator

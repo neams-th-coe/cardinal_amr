@@ -2,24 +2,12 @@ import openmc
 import numpy as np
 from argparse import ArgumentParser
 import openmc.material
-import warnings
 from materials import *
-
-warnings.filterwarnings("ignore")
-
-
-def make_sfr_material(material_dict, density: float, percent_type: str):
-    material = openmc.Material()
-    for nuclide, material_info in material_dict.items():
-        material.add_nuclide(
-            nuclide, percent=material_info["percent"], percent_type=percent_type
-        )
-
-    return material
+import common_input as geom
 
 
 def settings(shannon_entropy: bool, height: float):
-    pitch = 1.25984
+    pitch = geom.pitch
     lower_left = (-pitch / 2, -pitch / 2, 0.0)
     upper_right = (pitch / 2, pitch / 2, height)
     uniform_dist = openmc.stats.Box(lower_left, upper_right)
@@ -55,43 +43,32 @@ def main():
         help="Number of cells in the Z direction",
     )
     ap.add_argument(
-        "-e", "--shannon_entropy", action="store_true", help="Add Shannon entropy mesh"
+        "-e",
+        "--shannon_entropy",
+        action="store_true",
+        help="Add Shannon entropy mesh"
     )
-    ap.add_argument(
-        "--height",
-        dest="height_of_the_core",
-        type=float,
-        default=30.0,
-        help="Height of the reactor core",
-    )
+
 
     arguments = ap.parse_args()
     arguments = ap.parse_args()
 
     N = arguments.n_axial
-    height = arguments.height_of_the_core
     shannon_entropy = arguments.shannon_entropy
+    height = geom.height
 
-    outer_fuel_material = make_sfr_material(
-        material_dict=outer_fuel_material_dict, density=10.0, percent_type="wo"
-    )
-    cladding_material = make_sfr_material(
-        material_dict=cladding_material_dict, density=10, percent_type="ao"
-    )
-    helium = make_sfr_material(
-        material_dict=heilum_material_dict, density=0.001598, percent_type="ao"
-    )
-    sodium = make_sfr_material(
-        material_dict=sodium_material_dict, density=0.96, percent_type="ao"
-    )
+    outer_fuel_material = make_sfr_material(material_dict['outer_fuel'], percent_type='wo')
+    cladding_material = make_sfr_material(material_dict['cladding'], percent_type='ao')
+    sodium = make_sfr_material(material_dict['sodium'], percent_type='ao')
+    helium = make_sfr_material(material_dict['helium'], percent_type='ao')
     materials = openmc.Materials(
         [outer_fuel_material, sodium, helium, cladding_material]
     )
     materials.export_to_xml()
 
-    fuel_or = openmc.ZCylinder(r=0.943 / 2)
-    clad_ir = openmc.ZCylinder(r=0.973 / 2)
-    clad_or = openmc.ZCylinder(r=1.073 / 2)
+    fuel_or = openmc.ZCylinder(r=geom.r_fuel)
+    clad_ir = openmc.ZCylinder(r=geom.r_clad_inner)
+    clad_or = openmc.ZCylinder(r=geom.r_clad_inner+geom.t_clad)
 
     z_plane = [openmc.ZPlane(z0=i) for i in np.linspace(-height / 2, height / 2, N + 1)]
 
