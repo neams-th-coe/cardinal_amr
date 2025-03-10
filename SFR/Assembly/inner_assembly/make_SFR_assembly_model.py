@@ -106,18 +106,13 @@ def main():
     sodium_mod_cell = openmc.Cell(fill=sodium)
     sodium_mod_u = openmc.Universe(cells=(sodium_mod_cell,))
 
-    in_lat = openmc.HexLattice()
-    in_lat.center = (0.0, 0.0)
-    in_lat.pitch = (geom.lattice_pitch,)
-    in_lat.orientation = "y"
-    in_lat.outer = sodium_mod_u
-    in_lat.universes = make_hexagonal_ring_lists(9, inner_u)
+    lattice = openmc.HexLattice()
+    lattice.center = (0.0, 0.0, 0.0)
+    lattice.orientation = "y"
+    lattice.outer = sodium_mod_u
+    lattice.pitch = (geom.lattice_pitch,height/geom.AXIAL_DIVISIONS)
+    lattice.universes = [make_hexagonal_ring_lists(9, inner_u)]*geom.AXIAL_DIVISIONS
 
-    axial_pitch = height / N
-    lattice = openmc.RectLattice()
-    lattice.lower_left = (-geom.pitch / 2, -geom.pitch / 2, -height / 2)
-    lattice.pitch = (geom.pitch, geom.pitch, axial_pitch)
-    lattice.universes = [[[inner_u] * N]]
 
     outer_in_surface = openmc.model.hexagonal_prism(
         edge_length=geom.edge_length, orientation="y"
