@@ -1,3 +1,4 @@
+import openmc
 material_dict = {
     'outer_fuel': {
         'density': 10.0,
