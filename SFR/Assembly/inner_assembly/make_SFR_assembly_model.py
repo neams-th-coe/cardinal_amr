@@ -106,7 +106,7 @@ def main():
     sodium_mod_cell = openmc.Cell(fill=sodium)
     sodium_mod_u = openmc.Universe(cells=(sodium_mod_cell,))
 
-    in_lat = openmc.HexLattice(name="inner assembly")
+    in_lat = openmc.HexLattice()
     in_lat.center = (0.0, 0.0)
     in_lat.pitch = (geom.lattice_pitch,)
     in_lat.orientation = "y"
@@ -114,7 +114,7 @@ def main():
     in_lat.universes = make_hexagonal_ring_lists(9, inner_u)
 
     axial_pitch = height / N
-    lattice = openmc.RectLattice(name="3D lattice")
+    lattice = openmc.RectLattice()
     lattice.lower_left = (-geom.pitch / 2, -geom.pitch / 2, -height / 2)
     lattice.pitch = (geom.pitch, geom.pitch, axial_pitch)
     lattice.universes = [[[inner_u] * N]]
