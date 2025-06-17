@@ -96,8 +96,7 @@ def model_generate(arguments):
         -pincell_params.pitch / 2.0, -pincell_params.pitch / 2.0, 0.0)
     pincell_lattice.universes = [[[pincell_universe]] for i in range(arguments.n_axial)]
 
-    return openmc.Universe(
-        cells=[openmc.Cell(fill=pincell_lattice, region=-fuel_bb & +bottom & - top), sodium_cell]), openmc.Materials(
+    return pincell_universe, openmc.Materials(
         [fuel_material, sodium, helium, cladding_material]), openmc.Geometry(
         [openmc.Cell(fill=pincell_lattice, region=-fuel_bb & +bottom & - top), sodium_cell]), simulation_settings(
         arguments.shannon_entropy, height=pincell_params.height)
