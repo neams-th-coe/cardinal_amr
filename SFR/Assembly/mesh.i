@@ -1,4 +1,4 @@
-!include ../../common_input.i
+!include ../common_input.i
 [Mesh]
     [Pin]
       type = PolygonConcentricCircleMeshGenerator
