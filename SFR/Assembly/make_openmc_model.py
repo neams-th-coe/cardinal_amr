@@ -16,7 +16,7 @@ def generate_assembly_model(arguments):
     """
     :return:
     a assembly universe, openmc.Materials class, openmc.Geometry class, openmc.Settings class
-    the universe class is mostly for reuse if we want to create an assembly
+    the universe class is mostly for reuse if we want to create a full core model
     """
 
     top = openmc.ZPlane(z0=geometric_params.height / 2, boundary_type="vacuum")
