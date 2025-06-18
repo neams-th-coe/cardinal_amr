@@ -2,8 +2,6 @@ import openmc
 from argparse import ArgumentParser
 from SFR.materials import make_sfr_material, material_dict
 from SFR import common_input as pincell_params
-import os
-os.environ["OPENMC_CROSS_SECTIONS"] = "/home/ebny_walid/endfb-viii.0-hdf5/cross_sections.xml"
 
 
 def simulation_settings():
@@ -68,4 +66,4 @@ def generate_pincell_model(arguments):
 if __name__ == "__main__":
     args = argument_parser()
     root_universe, materials = generate_pincell_model(args)
-    openmc.model.Model(openmc.Geometry(root=root_universe), materials, simulation_settings()).run(geometry_debug=True)
+    openmc.model.Model(openmc.Geometry(root=root_universe), materials, simulation_settings()).export_to_model_xml()

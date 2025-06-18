@@ -2,9 +2,7 @@ import openmc
 import numpy as np
 from SFR.materials import make_sfr_material, material_dict
 from SFR import common_input as geometric_params
-from SFR.Pincell.make_openmc_model import get_pincell_universe
-from SFR.Pincell.make_openmc_model import argument_parser
-from SFR.Pincell.make_openmc_model import simulation_settings
+from SFR.Pincell.make_openmc_model import get_pincell_universe, argument_parser, simulation_settings
 
 
 def make_hexagonal_ring_lists(number_of_ring: int, universe: openmc.Universe):
@@ -42,4 +40,4 @@ def generate_assembly_model(arguments):
 if __name__ == "__main__":
     args = argument_parser()
     materials, root_universe, settings = generate_assembly_model(args)
-    openmc.model.Model(openmc.Geometry(root_universe), materials, settings).run(geometry_debug=True)
+    openmc.model.Model(openmc.Geometry(root_universe), materials, settings).export_to_model_xml()
