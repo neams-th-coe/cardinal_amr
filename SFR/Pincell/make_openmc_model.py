@@ -55,7 +55,7 @@ def generate_pincell_model(arguments):
     pincell_lattice = openmc.HexLattice()
     pincell_lattice.center = (0.0, 0.0, 0.0)
     pincell_lattice.orientation = "y"
-    pincell_lattice.outer = openmc.Universe(cells=(openmc.Cell(fill=sodium),))
+    pincell_lattice.outer = openmc.Universe(cells=[openmc.Cell(fill=sodium)])
     pincell_lattice.pitch = (pincell_params.pitch, pincell_params.height / pincell_params.AXIAL_DIVISIONS)
     pincell_lattice.universes = [[[pincell_universe]] for i in range(arguments.n_axial)]
     pincell_universe_base = openmc.Universe(cells=[openmc.Cell(fill=pincell_lattice, region=-fuel_bb & +bottom & - top)])
