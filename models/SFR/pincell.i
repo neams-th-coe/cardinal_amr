@@ -2,7 +2,7 @@
 [Mesh]
   [Pin]
     type = PolygonConcentricCircleMeshGenerator
-    num_sides ='${NUM_SECTORS}'
+    num_sides ='${NUM_SIDES}'
     num_sectors_per_side = "${NUM_SECTORS_PER_SIDE}"
     ring_radii = '${r_fuel} ${fparse r_clad_inner} ${fparse r_fuel + t_gap + t_clad}'
     ring_intervals = '${FUEL_RADIAL_DIVISIONS} 1 1'
