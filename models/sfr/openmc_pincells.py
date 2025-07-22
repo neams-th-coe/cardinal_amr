@@ -1,6 +1,6 @@
 import openmc
 from models.sfr import common_input as pincell_params
-from models.sfr.materials import make_sfr_material, material_dict
+from models.sfr.openmc_materials import make_sfr_material, material_dict
 
 PINCELLS = {}
 
