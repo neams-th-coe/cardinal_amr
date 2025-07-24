@@ -23,9 +23,6 @@ def make_hexagonal_ring_lists(number_of_ring: int, universe: openmc.Universe):
 def generate_assembly_model(arguments):
     pincell_universe, material = PINCELLS[arguments.pincell_type]
 
-    top = openmc.ZPlane(z0=assembly_geometric_params.height, boundary_type="vacuum")
-    bottom = openmc.ZPlane(z0=0, boundary_type="vacuum")
-
     lattice = openmc.HexLattice()
     lattice.center = (0.0, 0.0, 0.0)
     lattice.orientation = "y"
@@ -35,6 +32,9 @@ def generate_assembly_model(arguments):
 
     outer_in_surface = openmc.model.HexagonalPrism(edge_length=assembly_geometric_params.edge_length, orientation="y",
                                                    boundary_type='vacuum')
+    top = openmc.ZPlane(z0=assembly_geometric_params.height, boundary_type="vacuum")
+    bottom = openmc.ZPlane(z0=0, boundary_type="vacuum")
+
     main_in_assembly = openmc.Cell(fill=lattice, region=-outer_in_surface & +bottom & -top)
     main_in_u = openmc.Universe(cells=[main_in_assembly])
 
