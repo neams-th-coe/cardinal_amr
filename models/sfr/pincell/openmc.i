@@ -1,5 +1,3 @@
-!include ../../amr_strategies/value_jump_rel_error.i
-
 [Mesh]
   [file]
     type = FileMeshGenerator

@@ -1,6 +1,6 @@
 import openmc
-from models.SFR import common_input as pincell_params
-from models.SFR.materials import make_sfr_material, material_dict
+from models.sfr import common_input as pincell_params
+from models.sfr.openmc_materials import make_sfr_material, material_dict
 
 PINCELLS = {}
 
@@ -22,4 +22,3 @@ sodium_cell = openmc.Cell(fill=sodium, region=+clad_or)
 
 PINCELLS["inner"] = [openmc.Universe(cells=[fuel_cell_inner, gas_gap_cell, cladding_cell, sodium_cell]), openmc.Materials([inner_fuel_material, helium, cladding_material, sodium])]
 PINCELLS["outer"] = [openmc.Universe(cells=[fuel_cell_inner, gas_gap_cell, cladding_cell, sodium_cell]), openmc.Materials([outer_fuel_material, helium, cladding_material, sodium])]
-
