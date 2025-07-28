@@ -14,16 +14,10 @@
   power = ${fparse 3000e6/3000}
   cell_level = 1
   normalize_by_global_tally = false
-
-  [Tallies]
-    [heat_source]
-      type = MeshTally
-      score = 'kappa_fission'
-      name = heat_source
-      output = 'unrelaxed_tally_rel_error'
-    []
-  []
 []
+
+# Include common tallies.
+!include ../../mesh_tallies.i
 
 [Executioner]
   type = Steady
