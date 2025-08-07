@@ -30,15 +30,16 @@ def generate_assembly_model(arguments):
     lattice.pitch = (assembly_geometric_params.lattice_pitch, assembly_geometric_params.height / arguments.n_axial)
     lattice.universes = [make_hexagonal_ring_lists(9, pincell_universe)] * arguments.n_axial
 
-    outer_in_surface = openmc.model.HexagonalPrism(edge_length=assembly_geometric_params.edge_length, orientation="y",
-                                                   boundary_type='vacuum')
+    assembly_outer_surface = openmc.model.HexagonalPrism(edge_length=assembly_geometric_params.edge_length,
+                                                         orientation="y",
+                                                         boundary_type='vacuum')
     top = openmc.ZPlane(z0=assembly_geometric_params.height, boundary_type="vacuum")
     bottom = openmc.ZPlane(z0=0, boundary_type="vacuum")
 
-    main_in_assembly = openmc.Cell(fill=lattice, region=-outer_in_surface & +bottom & -top)
-    main_in_u = openmc.Universe(cells=[main_in_assembly])
+    assembly = openmc.Cell(fill=lattice, region=-assembly_outer_surface & +bottom & -top)
+    assembly_universe = openmc.Universe(cells=[assembly])
 
-    return main_in_u, material
+    return assembly_universe, material
 
 
 if __name__ == "__main__":
