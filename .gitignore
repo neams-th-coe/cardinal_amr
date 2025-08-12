@@ -1,5 +1,6 @@
 # VSCode garbage
 .vscode/
+.idea
 
 # OpenMC / Cardinal outputs
 *.h5
