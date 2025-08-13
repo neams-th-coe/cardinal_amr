@@ -17,6 +17,10 @@ At present this repository contains the following models:
   - 17 pin x 17 pin unrodded / rodded UO2 PWR assemblies;
   - 4 assembly x 4 assembly unrodded / rodded UO2/MOX PWR lattices;
 
+-  Sodium Cooled Fast Reactor (`/models/sfr/*`)
+   - pincell model with two types of material composition ( inner and outer region of the reactor);
+   - assembly model with two types of material composition ( inner and outer region of the reactor);
+
 In addition to these models, this repository also contains a series of AMR algorithms - these can be found in `/amr_strategies/*`. To apply one of these AMR strategies to a test model in this repository, follow the steps below:
 
 1. Add an `!include STRATEGY_NAME` to the beginning of the `openmc.i` file in one of the model sub directories, where `STRATEGY_NAME` is the name of a file in `amr_strategies`.
