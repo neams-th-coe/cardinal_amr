@@ -4,6 +4,7 @@
     file = mesh_in.e
   []
 []
+
 [Problem]
   type = OpenMCCellAverageProblem
   particles = 20000
