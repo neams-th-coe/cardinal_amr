@@ -15,8 +15,9 @@
 
 [AuxKernels]
   [hierarchy_aux_kernel]
-    type=ElementHierarchyAux
+    type=ElementAdaptivityLevelAux
     variable=hierarchy
+    level='h'
   []
   [store_same_flux]
       type = ExtraElementIDAux

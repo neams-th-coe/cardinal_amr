@@ -18,9 +18,6 @@ material_dict = {
     }
 }
 
-# uo2 [0, 55] and b4c [55, 100]
-x_uo2_right = 55
-
 
 def make_materials(material_dictionary: dict, percent_type: str):
     mat = openmc.Material()
@@ -64,27 +61,16 @@ def simulation_settings(argparse, space_dist=None):
 def argument_parser():
     arg_parser = ArgumentParser(description="Argument parser for segmented geometry model.")
 
-    arg_parser.add_argument('-Nx', dest="Nx", type=int, default=20,
-                            help="Number of segments in x direction.")
-    arg_parser.add_argument('-Ny', dest="Ny", type=int, default=10,
-                            help="Number of segments in y direction.")
-    arg_parser.add_argument('-Nz', dest="Nz", type=int, default=10,
-                            help="Number of segments in z direction.")
-    arg_parser.add_argument("-n", dest="n_particles", type=int, default=1000,
-                            help="Number of particles per batch.")
-    arg_parser.add_argument("-i", dest="n_inactive_batches", type=int, default=50,
-                            help="Number of inactive batches.")
-    arg_parser.add_argument("-t", dest="n_batches", type=int, default=200,
-                            help="Number of total batches.")
-
+    arg_parser.add_argument('-Nx', dest="Nx", type=int, default=20, help="Number of segments in x direction.")
+    arg_parser.add_argument("-n", dest="n_particles", type=int, default=1000, help="Number of particles per batch.")
+    arg_parser.add_argument("-i", dest="n_inactive_batches", type=int, default=50, help="Number of inactive batches.")
+    arg_parser.add_argument("-t", dest="n_batches", type=int, default=200, help="Number of total batches.")
     arg_parser.add_argument("-x_min", dest="x_min", type=float, default=0, help="Minimum x dimension.")
     arg_parser.add_argument("-x_max", dest="x_max", type=float, default=100.0, help="Maximum x dimension.")
     arg_parser.add_argument("-y_min", dest="y_min", type=float, default=0.0, help="Minimum y dimension.")
     arg_parser.add_argument("-y_max", dest="y_max", type=float, default=10.0, help="Maximum y dimension.")
     arg_parser.add_argument("-z_min", dest="z_min", type=float, default=0.0, help="Minimum z dimension.")
     arg_parser.add_argument("-z_max", dest="z_max", type=float, default=10.0, help="Maximum z dimension.")
-
-    arg_parser.add_argument("-fuel_percentage", dest="fuel_percentage", type=float, default=0.55,
-                            help="Fraction of the domain in x filled with fuel.")
+    arg_parser.add_argument("-fuel_percentage", dest="fuel_percentage", type=float, default=0.55, help="Fraction of the domain in x filled with fuel.")
 
     return arg_parser.parse_args()

@@ -18,6 +18,7 @@ def make_model():
     materials = [fuel, b4c]
 
     cells = []
+    x_uo2_right = (args.x_max - args.x_min)*args.fuel_percentage
     for i in range(args.Nx):
 
         material = fuel if x_pos[i] < x_uo2_right else b4c

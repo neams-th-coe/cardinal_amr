@@ -1,7 +1,7 @@
 ref_mesh_file_name=gt.e-s011
 test_mesh_file_name=hex_same_flux_high_err_ma.e-s010
 
-!include ../PHYSOR_MA_2026/mesh.i
+!include ../models/mesh.i
 
 [AuxVariables]
     [ref_solution_hierarchy]
@@ -44,8 +44,9 @@ test_mesh_file_name=hex_same_flux_high_err_ma.e-s010
     expression = 'max(test_solution_hierarchy, ref_solution_hierarchy)'
   []
   [adaptive_hierarchy_aux]
-    type=ElementHierarchyAux
+    type=ElementAdaptivityLevelAux
     variable=adaptive_hierarchy
+    level='h'
   []
   [calc_remaining_refinement_steps]
     type = ParsedAux
