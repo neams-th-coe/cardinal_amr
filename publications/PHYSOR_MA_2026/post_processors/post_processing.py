@@ -65,8 +65,6 @@ class MeshAmalgamationPostProcessor:
         except subprocess.CalledProcessError as e:
             print("STDERR:", e.stderr)
 
-        self.set_updated_union_mesh()
-
     def set_updated_union_mesh(self):
         """
         now that the union mesh is generated I need to set it.
