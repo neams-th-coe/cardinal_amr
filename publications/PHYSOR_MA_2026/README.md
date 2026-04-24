@@ -3,18 +3,17 @@ This directory holds all the necessary input and post-processing scripts to repr
 Ebny Walid Ahammed et al., "Development of Mesh Tally Amalgamation Algorithm for Coupled High Fidelity Multiphysics Simulation", in Proceedings of PHYSOR 2026, Turin, Italy.
 
 
-# setup:
-Parts of mesh tally amalgamation algorithm source code are still in the review process. 
-1. Clone cardinal from a [branch](https://github.com/magnoxemo/cardinal/tree/my_testing) 
-2. Goto the cardinal dir and get dependencies by runing ``./scripts/get-dependencies.sh``
-3. Change openmc submodule upstream to this branch [mesh_tally_amalgamation](https://github.com/magnoxemo/openmc/tree/mesh_tally_amalgamation), fetch it and check out that branch.
+# Setup:
+Parts of the mesh tally amalgamation algorithm source code are still in the review process. 
+1. Clone Cardinal from [this branch](https://github.com/magnoxemo/cardinal/tree/my_testing) 
+2. Enter the new Cardinal directory and get dependencies by running `./scripts/get-dependencies.sh`
+3. Change the OpenMC submodule upstream to the following remote [https://github.com/magnoxemo/openmc.git](https://github.com/magnoxemo/openmc.git). Then, check out the `mesh_tally_amalgamation` branch.
 
-Rest fo the build process same as in the [cardinal](https://cardinal.cels.anl.gov/without_conda.html) website. Also, To save you the trouble, use this [Dockerfile](https://github.com/magnoxemo/custom_scripts/blob/main/cardinal_stuff/Dockerfile). 
+The remainder of the build process is the same as a normal Cardinal installation. Those instructions can be found [here](https://cardinal.cels.anl.gov/without_conda.html). Alternatively, you can use this [Dockerfile](https://github.com/magnoxemo/custom_scripts/blob/main/cardinal_stuff/Dockerfile). 
 
-# Actual simulation:
-1. Generate the model.xml
-2. `~/cardinal-opt -i openmc.i Adaptivity/Indicators/error/variable=flux Adaptivity/Markers/rel_error/variable=flux_rel_error`
-3. (Optional) for postprocessing use the `post_processing/post_processing.py` or you can look at this
-notebook [post_processing_notebook](https://github.com/magnoxemo/amr_test_cases_input_files/blob/main/PHYSOR26/notebook.ipynb)
+# Generating the results from the paper:
+1. Generate the `model.xml` file by running `models/make_openmc_model.py`
+2. Run `cardinal-opt -i openmc.i` (assuming there is a valid Cardinal executable on your path). If using the suggested Dockerfile, run `~/cardinal-opt -i openmc.i`
+3. (Optional) For post-processing you can use `post_processing/post_processing.py` or [this Jupyter notebook](https://github.com/magnoxemo/amr_test_cases_input_files/blob/main/PHYSOR26/notebook.ipynb)
 
 
