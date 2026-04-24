@@ -28,24 +28,6 @@ def make_materials(material_dictionary: dict, percent_type: str):
     return mat
 
 
-def make_box(x_dim, y_dim, z_dim, boundary_conditions=None):
-    bc = boundary_conditions or ["transmission"] * 6
-    xmin_bc, xmax_bc, ymin_bc, ymax_bc, zmin_bc, zmax_bc = bc
-
-    xmin, xmax = x_dim
-    ymin, ymax = y_dim
-    zmin, zmax = z_dim
-
-    return (
-        +openmc.XPlane(x0=xmin, boundary_type=xmin_bc)
-        & -openmc.XPlane(x0=xmax, boundary_type=xmax_bc)
-        & +openmc.YPlane(y0=ymin, boundary_type=ymin_bc)
-        & -openmc.YPlane(y0=ymax, boundary_type=ymax_bc)
-        & +openmc.ZPlane(z0=zmin, boundary_type=zmin_bc)
-        & -openmc.ZPlane(z0=zmax, boundary_type=zmax_bc)
-    )
-
-
 def simulation_settings(argparse, space_dist=None):
     setting = openmc.Settings()
     setting.particles = argparse.n_particles

@@ -1,7 +1,8 @@
-num_cycles = 10
-r_error_fraction = 0.2
-r_stat_error = 0.05
-c_stat_error = 1e-1
+!include ../../../../amr_strategies/value_jump_rel_error.i
+
+R_ERROR_FRACTION := 0.2
+R_STAT_ERROR := 0.05
+
 
 [Adaptivity]
   marker = error_combo

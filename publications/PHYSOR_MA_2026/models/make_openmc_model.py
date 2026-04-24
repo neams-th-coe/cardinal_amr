@@ -23,7 +23,7 @@ def make_model():
 
         material = fuel if x_pos[i] < x_uo2_right else b4c
         boundary_conditions = bc_map["left" if i == 0 else "right" if i == args.Nx - 1 else "middle"]
-        region = make_box(x_dim=[x_pos[i], x_pos[i + 1]], y_dim=[args.y_min, args.y_max], z_dim=[args.z_min, args.z_max], boundary_conditions=boundary_conditions)
+        region = openmc.model.RectangularParallelepiped(x_pos[i], x_pos[i + 1], args.y_min, args.y_max, args.z_min, args.z_max, boundary_type=boundary_conditions)
         cells.append(openmc.Cell(region=region, fill=material))
 
     model = openmc.Model()
