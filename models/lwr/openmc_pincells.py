@@ -23,6 +23,7 @@ PINCELLS = {}
 
 ## The pincells - fuels first
 ### Common primitives for defining the different fuel regions.
+
 fuel_pin_or = openmc.ZCylinder(r = geom.r_fuel)
 fuel_gap_or = openmc.ZCylinder(r = geom.r_fuel + geom.t_f_c_gap)
 fuel_zr_or = openmc.ZCylinder(r = geom.r_fuel + geom.t_f_c_gap + geom.t_zr_clad)
@@ -39,21 +40,35 @@ gap_cell = openmc.Cell(name = 'Pin Gap', region = fuel_gap_region)
 zr_clad_cell = openmc.Cell(name = 'Pin Zr Clad', region = fuel_clad_region, fill = mats['ZR_C'])
 h2o_bb_cell = openmc.Cell(name = 'Pin Water Bounding Box', region = fuel_water_region, fill = mats['H2O'])
 
+### Concentric, equal-area radial subdivision of the fuel meat, matching the MOOSE mesh's
+### FUEL_RADIAL_DIVISIONS so that the radial power/temperature profile can be resolved.
+fuel_ring_ors = [openmc.ZCylinder(r = geom.r_fuel * np.sqrt(i / geom.FUEL_RADIAL_DIVISIONS))
+                 for i in range(1, geom.FUEL_RADIAL_DIVISIONS)] + [fuel_pin_or]
+
+def fuel_ring_cells(name, material):
+  cells = []
+  inner_or = None
+  for i, outer_or in enumerate(fuel_ring_ors):
+    region = -outer_or if inner_or is None else (+inner_or & -outer_or)
+    cells.append(openmc.Cell(name = f'{name} Fuel Ring {i + 1}', region = region, fill = material))
+    inner_or = outer_or
+  return cells
+
 ### The entire 4.3% MOX pincell.
-mox_4_3_fuel_cell = openmc.Cell(name = '4.3% MOX Fuel Pin', region = fuel_pin_region, fill = mats['MOX_43'])
-PINCELLS['MOX43'] = openmc.Universe(cells=[mox_4_3_fuel_cell, gap_cell, zr_clad_cell, h2o_bb_cell])
+mox_4_3_fuel_cells = fuel_ring_cells('4.3% MOX', mats['MOX_43'])
+PINCELLS['MOX43'] = openmc.Universe(cells=mox_4_3_fuel_cells + [gap_cell, zr_clad_cell, h2o_bb_cell])
 
 ### The entire 7.0% MOX pincell.
-mox_7_0_fuel_cell = openmc.Cell(name = '7.0% MOX Fuel Pin', region = fuel_pin_region, fill = mats['MOX_70'])
-PINCELLS['MOX70'] = openmc.Universe(cells=[mox_7_0_fuel_cell, gap_cell.clone(False, False), zr_clad_cell.clone(False, False), h2o_bb_cell.clone(False, False)])
+mox_7_0_fuel_cells = fuel_ring_cells('7.0% MOX', mats['MOX_70'])
+PINCELLS['MOX70'] = openmc.Universe(cells=mox_7_0_fuel_cells + [gap_cell.clone(False, False), zr_clad_cell.clone(False, False), h2o_bb_cell.clone(False, False)])
 
 ### The entire 8.7% MOX pincell.
-mox_8_7_fuel_cell = openmc.Cell(name = '8.7% MOX Fuel Pin', region = fuel_pin_region, fill = mats['MOX_87'])
-PINCELLS['MOX87'] = openmc.Universe(cells=[mox_8_7_fuel_cell, gap_cell.clone(False, False), zr_clad_cell.clone(False, False), h2o_bb_cell.clone(False, False)])
+mox_8_7_fuel_cells = fuel_ring_cells('8.7% MOX', mats['MOX_87'])
+PINCELLS['MOX87'] = openmc.Universe(cells=mox_8_7_fuel_cells + [gap_cell.clone(False, False), zr_clad_cell.clone(False, False), h2o_bb_cell.clone(False, False)])
 
 ### The entire UO2 pincell.
-uo2_fuel_cell = openmc.Cell(name = 'UO2 Fuel Pin', region = fuel_pin_region, fill = mats['UO2'])
-PINCELLS['UO2'] = openmc.Universe(cells=[uo2_fuel_cell, gap_cell.clone(False, False), zr_clad_cell.clone(False, False), h2o_bb_cell.clone(False, False)])
+uo2_fuel_cells = fuel_ring_cells('UO2', mats['UO2'])
+PINCELLS['UO2'] = openmc.Universe(cells=uo2_fuel_cells + [gap_cell.clone(False, False), zr_clad_cell.clone(False, False), h2o_bb_cell.clone(False, False)])
 
 ## Guide tube, control rod, and fission chamber next.
 ### Common primitives for defining both.

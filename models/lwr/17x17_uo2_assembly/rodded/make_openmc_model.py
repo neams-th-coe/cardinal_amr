@@ -19,15 +19,19 @@ from argparse import ArgumentParser
 
 import openmc
 import openmc_common as geom
-from openmc_materials import MATERIALS as mats
-from openmc_assemblies import ASSEMBLIES as asmb
-from openmc_assemblies import assembly_bb, pins_per_axis
-from openmc_settings import COMMON_SETTINGS as settings
 
 ap = ArgumentParser()
 ap.add_argument('-n', dest='n_axial', type=int, default=1,
                 help='Number of axial core divisions')
+ap.add_argument('-r', dest='n_fuel_radial_divisions', type=int, default=geom.FUEL_RADIAL_DIVISIONS,
+                help='Number of radial fuel divisions')
 args = ap.parse_args()
+geom.FUEL_RADIAL_DIVISIONS = args.n_fuel_radial_divisions
+
+from openmc_materials import MATERIALS as mats
+from openmc_assemblies import ASSEMBLIES as asmb
+from openmc_assemblies import assembly_bb, pins_per_axis
+from openmc_settings import COMMON_SETTINGS as settings
 
 #--------------------------------------------------------------------------------------------------------------------------#
 # Geometry definitions.

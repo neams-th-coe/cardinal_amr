@@ -5,7 +5,7 @@
 # OpenMC / Cardinal outputs
 *.h5
 *.out
-*.e
+*.e*
 *.xml
 *.csv
 
