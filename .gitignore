@@ -8,6 +8,9 @@
 *.e*
 *.xml
 *.csv
+*.gz
+data
+header
 
 # OpenMC plotter files
 *.pkl
@@ -16,6 +19,7 @@
 *.png
 *.gif
 *.zip
+*.txt
 
 # Python stuff.
 *.pyc
